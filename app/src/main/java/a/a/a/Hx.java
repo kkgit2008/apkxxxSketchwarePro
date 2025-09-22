@@ -31,7 +31,9 @@ public class Hx {
     public String l = "";
 
     public Hx(jq logicHolder, ProjectFileBean projectFileBean, eC eC) {
+
         jq = logicHolder;
+
         this.projectFileBean = projectFileBean;
 
         ProjectSettings projectSettings = new ProjectSettings(logicHolder.sc_id);

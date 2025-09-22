@@ -22,6 +22,7 @@ android {
         targetSdk = 28
         minSdk = 26
         versionCode = 150
+
         versionName = "v7.0.0-beta1"
 
         buildConfigField("String", "GIT_HASH", "\"${gitCommitHash}\"")
@@ -133,11 +134,18 @@ dependencies {
     implementation "org.eclipse.jdt:ecj:3.26.0"
     implementation 'javax.xml.stream:stax-api:1.0-2'
 
+
     implementation "com.github.waelchateur:kotlinc-for-sketchware:2.1.21_rc3"
     compileOnly "org.jetbrains.kotlin:kotlin-compiler:2.1.21"
     implementation 'io.github.itsaky:nb-javac-android:17.0.0.3'
     implementation 'com.fasterxml.woodstox:woodstox-core:6.5.1'
 
+
+    implementation "com.github.waelchateur:kotlinc-for-sketchware:2.1.21_rc3"
+    compileOnly "org.jetbrains.kotlin:kotlin-compiler:2.1.21"
+    implementation 'io.github.itsaky:nb-javac-android:17.0.0.3'
+    implementation 'com.fasterxml.woodstox:woodstox-core:6.5.1'
+    
     implementation "com.github.Cosmic-Ide:DependencyResolver:05ec26af0b"
     implementation "com.github.PranavPurwar:filepicker:74526bea66"
 

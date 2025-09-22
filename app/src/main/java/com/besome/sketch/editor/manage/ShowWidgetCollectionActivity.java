@@ -14,7 +14,9 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.besome.sketch.beans.ViewBean;
 import com.besome.sketch.design.DesignActivity;
+
 import com.besome.sketch.editor.view.ItemView;
+
 import com.besome.sketch.editor.view.ViewPane;
 import com.besome.sketch.lib.base.BaseAppCompatActivity;
 import com.besome.sketch.lib.ui.EasyDeleteEditText;

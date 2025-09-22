@@ -79,27 +79,9 @@ import a.a.a.wB;
 import a.a.a.wq;
 import a.a.a.yB;
 import a.a.a.zB;
-import dev.aldi.sayuti.editor.view.item.ItemBadgeView;
-import dev.aldi.sayuti.editor.view.item.ItemCircleImageView;
-import dev.aldi.sayuti.editor.view.item.ItemCodeView;
-import dev.aldi.sayuti.editor.view.item.ItemLottieAnimation;
-import dev.aldi.sayuti.editor.view.item.ItemMaterialButton;
-import dev.aldi.sayuti.editor.view.item.ItemOTPView;
-import dev.aldi.sayuti.editor.view.item.ItemPatternLockView;
-import dev.aldi.sayuti.editor.view.item.ItemViewPager;
-import dev.aldi.sayuti.editor.view.item.ItemWaveSideBar;
-import dev.aldi.sayuti.editor.view.item.ItemYoutubePlayer;
+import dev.aldi.sayuti.editor.view.item.*;
 import mod.agus.jcoderz.beans.ViewBeans;
-import mod.agus.jcoderz.editor.view.item.ItemAnalogClock;
-import mod.agus.jcoderz.editor.view.item.ItemAutoCompleteTextView;
-import mod.agus.jcoderz.editor.view.item.ItemDatePicker;
-import mod.agus.jcoderz.editor.view.item.ItemDigitalClock;
-import mod.agus.jcoderz.editor.view.item.ItemGridView;
-import mod.agus.jcoderz.editor.view.item.ItemMultiAutoCompleteTextView;
-import mod.agus.jcoderz.editor.view.item.ItemRadioButton;
-import mod.agus.jcoderz.editor.view.item.ItemRatingBar;
-import mod.agus.jcoderz.editor.view.item.ItemTimePicker;
-import mod.agus.jcoderz.editor.view.item.ItemVideoView;
+import mod.agus.jcoderz.editor.view.item.*;
 import mod.bobur.XmlToSvgConverter;
 import mod.hey.studios.util.ProjectFile;
 import pro.sketchware.R;
@@ -130,6 +112,7 @@ public class ViewPane extends RelativeLayout {
     private ColorsEditorManager colorsEditorManager;
     private int defaultTextColor = 0; // need to save the original color before changes, cause using getDefaultColor() returns the current text color
     private int defaultHintColor = 0;
+
     private Material3LibraryManager material3LibraryManager;
 
     public ViewPane(Context context) {
@@ -437,9 +420,11 @@ public class ViewPane extends RelativeLayout {
                             xmlToSvgConverter.setImageVectorFromFile(tempImageView, xmlToSvgConverter.getVectorFullPath(DesignActivity.sc_id, viewBean.image.resName));
                         }
                     }
+
                 } catch (Exception exception) {
                     crashlytics.recordException(exception);
                 }
+
             }
             view.setRotation(viewBean.image.rotate);
             view.setAlpha(viewBean.alpha);

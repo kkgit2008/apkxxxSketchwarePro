@@ -99,6 +99,7 @@ import a.a.a.Ts;
 import a.a.a.Us;
 import a.a.a.Vs;
 import a.a.a.ZB;
+import a.a.a.bB;
 import a.a.a.bC;
 import a.a.a.eC;
 import a.a.a.jC;
@@ -252,6 +253,7 @@ public class LogicEditorActivity extends BaseAppCompatActivity implements View.O
                 o.getRoot().k();
                 o.b();
             });
+
         }
     }
 
@@ -1230,7 +1232,11 @@ public class LogicEditorActivity extends BaseAppCompatActivity implements View.O
     }
 
     public Rs b(BlockBean blockBean) {
-        return new Rs(this, Integer.parseInt(blockBean.id), blockBean.spec, blockBean.type, blockBean.typeName, blockBean.opCode);
+        Rs block = new Rs(this, Integer.parseInt(blockBean.id), blockBean.spec, blockBean.type, blockBean.typeName, blockBean.opCode);
+        // main reason why some blocks are not showing because Ts class is using View#LAYER_TYPE_SOFTWARE.
+        // we are changing it to fix it.
+        //block.setLayerType(LAYER_TYPE_HARDWARE, null);
+        return block;
     }
 
     private RadioButton getFontRadioButton(String fontName) {
@@ -1269,7 +1275,9 @@ public class LogicEditorActivity extends BaseAppCompatActivity implements View.O
                 LogicEditorActivity.this.a(ss, "R.color." + var1);
             }
         });
+
         colorPickerDialog.materialColorAttr((attr, attrColor) -> a(ss, "R.attr." + attr));
+
         colorPickerDialog.showAtLocation(ss, Gravity.CENTER, 0, 0);
     }
 
@@ -1869,8 +1877,10 @@ public class LogicEditorActivity extends BaseAppCompatActivity implements View.O
                 } else if (tag.equals("listRemove")) {
                     J();
                 } else if (tag.equals("blockAdd")) {
+
                     Intent intent = new Intent(this, MakeBlockActivity.class);
                     intent.putExtra("sc_id", scId);
+
                     intent.putExtra("project_file", M);
                     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivityForResult(intent, 222);
@@ -2616,6 +2626,32 @@ public class LogicEditorActivity extends BaseAppCompatActivity implements View.O
                 super(binding.getRoot());
                 this.binding = binding;
             }
+        }
+    }
+
+    public static class LoadEventBlocksTask {
+        private final WeakReference<LogicEditorActivity> activityRef;
+        private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+        public LoadEventBlocksTask(LogicEditorActivity activity) {
+            activityRef = new WeakReference<>(activity);
+        }
+
+        public void execute() {
+            getActivity().k();
+            executorService.execute(this::doInBackground);
+        }
+
+        private void doInBackground() {
+            LogicEditorActivity activity = getActivity();
+            if (activity != null) {
+                activity.loadEventBlocks();
+                activity.runOnUiThread(activity::h);
+            }
+        }
+
+        private LogicEditorActivity getActivity() {
+            return activityRef.get();
         }
     }
 }
