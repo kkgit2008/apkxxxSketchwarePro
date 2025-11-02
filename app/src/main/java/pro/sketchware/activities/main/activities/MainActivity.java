@@ -414,14 +414,6 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         });
         bottomSheetDialog.setCancelable(true);
 
-        bottomSheetDialog.setOnCancelListener(dialog -> {
-            ConfigActivity.setSetting(ConfigActivity.SETTING_CRITICAL_UPDATE_REMINDER, true);
-            Toast.makeText(this, "See more at ' ≡ Changelog '", Toast.LENGTH_LONG).show();
-        });
-
-        return bottomSheetDialog;
-    }
-
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (drawerToggle.onOptionsItemSelected(item)) {
