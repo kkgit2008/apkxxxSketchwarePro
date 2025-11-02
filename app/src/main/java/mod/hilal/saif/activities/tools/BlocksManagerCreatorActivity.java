@@ -114,6 +114,7 @@ public class BlocksManagerCreatorActivity extends BaseAppCompatActivity {
             }
         });
 
+        binding.type.setOnClickListener(view -> binding.selectType.performClick());
         binding.selectType.setOnClickListener(v -> {
             List<String> types = Arrays.asList(
                     "regular", "c", "e", "s", "b",
@@ -301,7 +302,6 @@ public class BlocksManagerCreatorActivity extends BaseAppCompatActivity {
         binding.colour.setMaxLines(1);
         binding.spec2.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         binding.spec2.setMaxLines(1);
-        binding.code.setInputType(InputType.TYPE_CLASS_TEXT);
         binding.spec2Layout.setVisibility(View.GONE);
     }
 

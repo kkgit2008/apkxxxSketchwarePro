@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Comparator;
 
 import a.a.a.MA;
 import a.a.a.mB;
@@ -222,9 +222,7 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
 
     private void runLoadLocalLibrariesTask() {
         k();
-        new Handler().postDelayed(() -> {
-            new LoadLocalLibrariesTask(this).execute();
-        }, 500L);
+        new Handler().postDelayed(() -> new LoadLocalLibrariesTask(this).execute(), 500L);
     }
 
     private List<LocalLibrary> getAdapterLocalLibraries() {
@@ -284,6 +282,8 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
             projectUsedLibs = getLocalLibraries(scId);
         }
 
+        localLibraries.sort(Comparator.comparing(lib -> !isUsedLibrary(lib.getName())));
+
         runOnUiThread(() -> {
             adapter.setLocalLibraries(localLibraries);
             binding.noContentLayout.setVisibility(localLibraries.isEmpty() ? View.VISIBLE : View.GONE);
@@ -301,7 +301,7 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
         return false;
     }
 
-    private interface OnLocalLibrarySelectedStateChangedListener {
+    public interface OnLocalLibrarySelectedStateChangedListener {
         void invoke(LocalLibrary library);
     }
 
@@ -376,9 +376,7 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
             binding.materialSwitch.setChecked(false);
             if (!notAssociatedWithProject) {
 
-                binding.materialSwitch.setOnClickListener(v -> {
-                    onItemClicked(binding, library.getName());
-                });
+                binding.materialSwitch.setOnClickListener(v -> onItemClicked(binding, library.getName()));
 
                 for (Map<String, Object> libraryMap : projectUsedLibs) {
                     if (library.getName().equals(libraryMap.get("name").toString())) {
@@ -411,9 +409,7 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
                 new MaterialAlertDialogBuilder(ManageLocalLibraryActivity.this)
                         .setTitle("Warning")
                         .setMessage("This library \"" + library.getName() + "\" already used in your project, removing it may break your project\rDo you want to continue removing it?")
-                        .setPositiveButton(Helper.getResString(R.string.common_word_yes), (dialog, which) -> {
-                            dialog.dismiss();
-                        })
+                        .setPositiveButton(Helper.getResString(R.string.common_word_yes), (dialog, which) -> dialog.dismiss())
                         .setNegativeButton(Helper.getResString(R.string.common_word_cancel), (dialog, which) -> {
                             toggleLocalLibrary(card, library, onLocalLibrarySelectedStateChangedListener);
                             dialog.dismiss();
@@ -467,7 +463,7 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
             notifyDataSetChanged();
         }
 
-        static class ViewHolder extends RecyclerView.ViewHolder {
+        public static class ViewHolder extends RecyclerView.ViewHolder {
             private final ViewItemLocalLibBinding binding;
 
             public ViewHolder(@NonNull ViewItemLocalLibBinding binding) {
@@ -499,9 +495,7 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
             binding.materialSwitch.setChecked(false);
             if (!notAssociatedWithProject) {
 
-                binding.getRoot().setOnClickListener(v -> {
-                    binding.materialSwitch.performClick();
-                });
+                binding.getRoot().setOnClickListener(v -> binding.materialSwitch.performClick());
 
                 binding.materialSwitch.setOnClickListener(v -> {
                     onItemClicked(binding, library.getName());
@@ -565,10 +559,13 @@ public class ManageLocalLibraryActivity extends BaseAppCompatActivity {
                     }
                 }
             }
+            
+            filteredLocalLibraries.sort(Comparator.comparing(lib -> !isUsedLibrary(lib.getName())));
+            
             notifyDataSetChanged();
         }
 
-        static class ViewHolder extends RecyclerView.ViewHolder {
+        public static class ViewHolder extends RecyclerView.ViewHolder {
             private final ViewItemLocalLibSearchBinding binding;
 
             public ViewHolder(@NonNull ViewItemLocalLibSearchBinding binding) {

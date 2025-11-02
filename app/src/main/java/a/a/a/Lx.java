@@ -110,10 +110,6 @@ public class Lx {
             content.append("implementation 'com.google.firebase:firebase-storage'\r\n");
         }
 
-        if (isLibraryNotExcluded(BuiltInLibraries.FIREBASE_DYNAMIC_LINKS, excludedLibraries) && metadata.isDynamicLinkUsed) {
-            content.append("implementation 'com.google.firebase:firebase-dynamic-links'\r\n");
-        }
-
         if (isLibraryNotExcluded(BuiltInLibraries.PLAY_SERVICES_ADS, excludedLibraries) && metadata.isAdMobEnabled) {
             content.append("implementation 'com.google.android.gms:play-services-ads:23.4.0'\r\n");
         }
@@ -130,20 +126,20 @@ public class Lx {
             content.append("implementation 'com.google.code.gson:gson:2.11.0'\r\n");
         }
 
-        if (isLibraryNotExcluded(BuiltInLibraries.OKHTTP, excludedLibraries) && metadata.isHttp3Used) {
+        if (isLibraryNotExcluded(BuiltInLibraries.OKHTTP_ANDROID, excludedLibraries) && metadata.isHttp3Used) {
             content.append("implementation 'com.squareup.okhttp3:okhttp:4.12.0'\r\n");
         }
 
         ConstVarComponent extraMetadata = metadata.x;
-        if (isLibraryNotExcluded(BuiltInLibraries.CIRCLE_IMAGEVIEW, excludedLibraries) && extraMetadata.isCircleImageViewUsed) {
+        if (isLibraryNotExcluded(BuiltInLibraries.CIRCLEIMAGEVIEW, excludedLibraries) && extraMetadata.isCircleImageViewUsed) {
             content.append("implementation 'de.hdodenhof:circleimageview:3.1.0'\r\n");
         }
 
-        if (isLibraryNotExcluded(BuiltInLibraries.YOUTUBE_PLAYER, excludedLibraries) && extraMetadata.isYoutubePlayerUsed) {
+        if (isLibraryNotExcluded(BuiltInLibraries.ANDROID_YOUTUBE_PLAYER, excludedLibraries) && extraMetadata.isYoutubePlayerUsed) {
             content.append("implementation 'com.pierfrancescosoffritti:androidyoutubeplayer:10.0.5'\r\n");
         }
 
-        if (isLibraryNotExcluded(BuiltInLibraries.CODE_VIEW, excludedLibraries) && extraMetadata.isCodeViewUsed) {
+        if (isLibraryNotExcluded(BuiltInLibraries.CODEVIEW, excludedLibraries) && extraMetadata.isCodeViewUsed) {
             content.append("implementation 'br.tiagohm:codeview:0.4.0'\r\n");
         }
 
@@ -155,16 +151,8 @@ public class Lx {
             content.append("implementation 'affan.ahmad:otp:0.1.0'\r\n");
         }
 
-        if (isLibraryNotExcluded(BuiltInLibraries.ONESIGNAL, excludedLibraries) && extraMetadata.isOneSignalUsed) {
-            content.append("implementation 'com.onesignal:OneSignal:3.14.0'\r\n");
-        }
-
         if (isLibraryNotExcluded(BuiltInLibraries.PATTERN_LOCK_VIEW, excludedLibraries) && extraMetadata.isPatternLockViewUsed) {
             content.append("implementation 'com.andrognito:patternlockview:1.0.0'\r\n");
-        }
-
-        if (isLibraryNotExcluded(BuiltInLibraries.FACEBOOK_ADS_AUDIENCE_NETWORK_SDK, excludedLibraries) && extraMetadata.isFBAdsUsed) {
-            content.append("implementation 'com.facebook.android:audience-network-sdk:6.18.0'");
         }
 
         if (isLibraryNotExcluded(BuiltInLibraries.PLAY_SERVICES_AUTH, excludedLibraries) && extraMetadata.isFBGoogleUsed) {
@@ -254,7 +242,7 @@ public class Lx {
 
     /**
      * @param widgetName The list widget's name
-     * @return The adapter's class name (e.g. List_filesAdapter from list_files)
+     * @return The adapter's class name (e.g., List_filesAdapter from list_files)
      */
     public static String a(String widgetName, boolean isViewBindingEnabled) {
         if (isViewBindingEnabled)
@@ -359,7 +347,7 @@ public class Lx {
                     eventLogic + "\r\n" +
                     "}";
             case "onStopTrackingTouch" ->
-                // Why's the parameter named <code>_param2</code> even if it's the first parameter
+                // Why's the parameter named <code>_param2</code> even if it's the first parameter?
                     "@Override\r\n" +
                             "public void onStopTrackingTouch(SeekBar _param2) {\r\n" +
                             eventLogic + "\r\n" +
@@ -588,7 +576,7 @@ public class Lx {
     }
 
     /**
-     * @return One or more lines which declare a Type's needed fields.
+     * @return One or more lines which declare a Type's necessary fields.
      * Example for a Camera Component:
      * <pre>
      * private File _file_&lt;component name&gt;;
@@ -709,21 +697,8 @@ public class Lx {
                     fieldDeclaration += "\r\nprivate OnCompleteListener " + typeInstanceName + "_onCompleteListener;";
                     break;
 
-                case "com.facebook.ads.InterstitialAd":
-                    fieldDeclaration += "\r\nprivate InterstitialAdListener " + typeInstanceName + "_InterstitialAdListener;";
-                    break;
-
                 case "PhoneAuthProvider.OnVerificationStateChangedCallbacks":
                     fieldDeclaration += "private PhoneAuthProvider.ForceResendingToken " + typeInstanceName + "_resendToken;";
-                    break;
-
-                case "DynamicLink":
-                    fieldDeclaration += "\r\nprivate OnSuccessListener " + typeInstanceName + "_onSuccessLink;"
-                            + "\r\nprivate OnFailureListener " + typeInstanceName + "_onFailureLink;";
-                    break;
-
-                case "com.facebook.ads.AdView":
-                    fieldDeclaration += "\r\nprivate AdListener " + typeInstanceName + "_AdListener;";
                     break;
 
                 case "TimePickerDialog":
@@ -1116,6 +1091,14 @@ public class Lx {
         return code.toString();
     }
 
+    public static String getBindingOrViewName(String name, boolean isViewBinding) {
+        if (isViewBinding) {
+            return "binding." + ViewBindingBuilder.generateParameterFromId(name);
+        } else {
+            return name;
+        }
+    }
+
     /**
      * @return Initializer of a View to be added to _initialize(Bundle)
      */
@@ -1123,11 +1106,7 @@ public class Lx {
         String initializer = "";
 
         if (!type.equals("include") && !type.equals("#")) {
-            if (viewBinding) {
-                initializer = name + " = " +
-                        "binding." +
-                        ViewBindingBuilder.generateParameterFromId(name) + ";";
-            } else {
+            if (!viewBinding) {
                 initializer = name + " = " +
                         (isInFragment ? "_view.findViewById(R.id." : "findViewById(R.id.") +
                         name + ");";
@@ -1136,15 +1115,15 @@ public class Lx {
 
         return switch (type) {
             case "WebView" -> initializer + "\r\n" +
-                    name + ".getSettings().setJavaScriptEnabled(true);\r\n" +
-                    name + ".getSettings().setSupportZoom(true);";
+                    getBindingOrViewName(name, viewBinding) + ".getSettings().setJavaScriptEnabled(true);\r\n" +
+                    getBindingOrViewName(name, viewBinding) + ".getSettings().setSupportZoom(true);";
             case "MapView" -> initializer + "\r\n" +
-                    name + ".onCreate(_savedInstanceState);\r\n";
+                    getBindingOrViewName(name, viewBinding) + ".onCreate(_savedInstanceState);\r\n";
             case "VideoView" -> {
                 String mediaControllerName = name + "_controller";
                 yield initializer + "\r\n" +
                         "MediaController " + mediaControllerName + " = new MediaController(this);\r\n" +
-                        name + ".setMediaController(" + mediaControllerName + ");";
+                        getBindingOrViewName(name, viewBinding) + ".setMediaController(" + mediaControllerName + ");";
             }
             default -> initializer;
         };
@@ -1153,7 +1132,8 @@ public class Lx {
     /**
      * @return Initializer for a Component that'd appear in <code>_initialize(Bundle)</code>
      */
-    public static String getComponentInitializerCode(String componentNameId, String componentName, String... parameters) {
+    public static String getComponentInitializerCode(String componentNameId, String
+            componentName, String... parameters) {
         switch (componentNameId) {
             case "SharedPreferences":
                 String preferenceFilename = "";
@@ -1603,7 +1583,8 @@ public class Lx {
     /**
      * @return A generated top-level <code>build.gradle</code> file, with indentation
      */
-    public static String c(String androidGradlePluginVersion, String googleMobileServicesVersion) {
+    public static String c(String androidGradlePluginVersion, String
+            googleMobileServicesVersion) {
         return "// Top-level build file where you can add configuration options common to all sub-projects/modules.\r\n" +
                 "buildscript {\r\n" +
                 "    repositories {\r\n" +
@@ -1633,7 +1614,8 @@ public class Lx {
     /**
      * @return A single line to initialize a drawer view.
      */
-    public static String getDrawerViewInitializer(String type, String viewName, String viewContainerName) {
+    public static String getDrawerViewInitializer(String type, String viewName, String
+            viewContainerName) {
         String initializer = "";
         if (!type.equals("include") && !type.equals("#")) {
             initializer = "_drawer_" + viewName + " = " + viewContainerName + ".findViewById(R.id." + viewName + ");";
@@ -1658,7 +1640,8 @@ public class Lx {
         };
     }
 
-    public static String getListenerCode(String eventName, String componentName, String eventLogic) {
+    public static String getListenerCode(String eventName, String componentName, String
+            eventLogic) {
         return switch (eventName) {
             case "onClickListener" ->
                     componentName + ".setOnClickListener(new View.OnClickListener() {\r\n" +
@@ -3255,7 +3238,9 @@ public class Lx {
         }
     }
 
-    public static String pagerAdapter(Ox ox, String pagerName, String pagerItemLayoutName, ArrayList<ViewBean> pagerItemViews, String onBindCustomViewLogic, boolean isViewBindingEnabled) {
+    public static String pagerAdapter(Ox ox, String pagerName, String
+                                              pagerItemLayoutName, ArrayList<ViewBean> pagerItemViews, String onBindCustomViewLogic,
+                                      boolean isViewBindingEnabled) {
         String adapterName = a(pagerName, isViewBindingEnabled);
 
         String viewsInitializer = "";
@@ -3343,7 +3328,9 @@ public class Lx {
                 "}\r\n";
     }
 
-    public static String recyclerViewAdapter(Ox ox, String recyclerViewName, String itemLayoutName, ArrayList<ViewBean> itemViews, String onBindCustomViewLogic, boolean isViewBindingEnabled) {
+    public static String recyclerViewAdapter(Ox ox, String recyclerViewName, String
+                                                     itemLayoutName, ArrayList<ViewBean> itemViews, String onBindCustomViewLogic,
+                                             boolean isViewBindingEnabled) {
         String adapterName = a(recyclerViewName, isViewBindingEnabled);
         String viewsInitializer = "";
         StringBuilder viewInitBuilder = new StringBuilder(viewsInitializer);
@@ -3416,7 +3403,7 @@ public class Lx {
      * A field's access modifier. Can either be
      * <code>private</code>, <code>protected</code> or <code>public</code>.
      */
-    enum AccessModifier {
+    public enum AccessModifier {
         /**
          * MODE_PRIVATE
          */

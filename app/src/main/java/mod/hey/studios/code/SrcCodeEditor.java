@@ -1,12 +1,13 @@
 package mod.hey.studios.code;
 
+import static pro.sketchware.utility.GsonUtils.getGson;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,7 +21,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
 import org.xml.sax.InputSource;
 
 import java.io.ByteArrayInputStream;
@@ -29,6 +29,7 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -66,6 +67,7 @@ import pro.sketchware.utility.ThemeUtils;
 import pro.sketchware.utility.UI;
 
 public class SrcCodeEditor extends BaseAppCompatActivity {
+    public static final String FLAG_FROM_ANDROID_MANIFEST = "from_android_manifest";
     public static final List<Pair<String, Class<? extends EditorColorScheme>>> KNOWN_COLOR_SCHEMES = List.of(
             new Pair<>("Default", EditorColorScheme.class),
             new Pair<>("GitHub", SchemeGitHub.class),
@@ -76,8 +78,11 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
     );
     public static SharedPreferences pref;
     public static int languageId;
-    private String beforeContent;
+    private String beforeContent = "";
     private CodeEditorHsBinding binding;
+    private boolean fromAndroidManifest;
+    private String scId;
+    private String activityName;
 
     public static void loadCESettings(Context c, CodeEditor ed, String prefix) {
         loadCESettings(c, ed, prefix, false);
@@ -134,7 +139,7 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
         }
 
     }
-    
+
     public static String prettifyXml(String xml, int indentAmount, Intent extras) {
         if (xml == null || xml.trim().isEmpty()) return xml;
 
@@ -142,12 +147,12 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(new InputSource(
-                new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
+                    new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
             document.normalize();
 
             XPath xPath = XPathFactory.newInstance().newXPath();
             NodeList nodeList = (NodeList) xPath.evaluate(
-                "//text()[normalize-space()='']", document, XPathConstants.NODESET);
+                    "//text()[normalize-space()='']", document, XPathConstants.NODESET);
             for (int i = 0; i < nodeList.getLength(); ++i) {
                 Node node = nodeList.item(i);
                 node.getParentNode().removeChild(node);
@@ -157,7 +162,7 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
             transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount",
-                String.valueOf(indentAmount));
+                    String.valueOf(indentAmount));
 
             boolean omitXmlDecl = extras != null && extras.hasExtra("disableHeader");
             if (omitXmlDecl) {
@@ -171,9 +176,9 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
             if (!omitXmlDecl && result.startsWith("<?xml")) {
                 int endOfDecl = result.indexOf("?>");
                 if (endOfDecl != -1 && endOfDecl + 2 < result.length()
-                    && result.charAt(endOfDecl + 2) != '\n') {
+                        && result.charAt(endOfDecl + 2) != '\n') {
                     result = result.substring(0, endOfDecl + 2) + "\n"
-                        + result.substring(endOfDecl + 2);
+                            + result.substring(endOfDecl + 2);
                 }
             }
 
@@ -183,8 +188,8 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
                 String trimmed = line.trim();
 
                 if (trimmed.startsWith("<") && !trimmed.startsWith("<?")
-                    && !trimmed.startsWith("<!") && trimmed.contains(" ")
-                    && !trimmed.startsWith("</")) {
+                        && !trimmed.startsWith("<!") && trimmed.contains(" ")
+                        && !trimmed.startsWith("</")) {
 
                     int indentBase = line.indexOf('<');
                     String baseIndent = " ".repeat(Math.max(0, indentBase));
@@ -196,7 +201,7 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
                     if (tagEnd > 0) {
                         String tagName = trimmed.substring(1, tagEnd);
                         String attrPart = trimmed.substring(tagEnd + 1)
-                            .replaceAll("/?>$", "").trim();
+                                .replaceAll("/?>$", "").trim();
                         String[] attrs = attrPart.split("\\s+(?=[^=]+\\=)");
 
                         formatted.append(baseIndent).append("<").append(tagName).append("\n");
@@ -224,7 +229,7 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
             return null;
         }
     }
-    
+
     /**
      * Adds a specified amount of tabs.
      */
@@ -275,13 +280,29 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
         binding = CodeEditorHsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        fromAndroidManifest = getIntent().getBooleanExtra(FLAG_FROM_ANDROID_MANIFEST, false);
         String title = getIntent().getStringExtra("title");
+        scId = getIntent().getStringExtra("sc_id");
+        activityName = getIntent().getStringExtra("activity_name");
 
         binding.editor.setTypefaceText(EditorUtils.getTypeface(this));
         binding.editor.setTextSize(16);
 
-        beforeContent = FileUtil.readFile(getIntent().getStringExtra("content"));
+        if (fromAndroidManifest) {
+            String filePath = FileUtil.getExternalStorageDir() + "/.sketchware/data/" + scId + "/Injection/androidmanifest/activities_components.json";
+            if (FileUtil.isExistFile(filePath)) {
+                ArrayList<HashMap<String, Object>> arrayList = getGson()
+                        .fromJson(FileUtil.readFile(filePath), Helper.TYPE_MAP_LIST);
+                for (int i = 0; i < arrayList.size(); i++) {
+                    if (arrayList.get(i).get("name").equals(activityName)) {
+                        beforeContent = (String) arrayList.get(i).get("value");
+                    }
+                }
+            }
+        }
 
+        if (!fromAndroidManifest)
+            beforeContent = FileUtil.readFile(getIntent().getStringExtra("content"));
         binding.editor.setText(beforeContent);
 
         if (title.endsWith(".java")) {
@@ -310,7 +331,35 @@ public class SrcCodeEditor extends BaseAppCompatActivity {
 
     public void save() {
         beforeContent = binding.editor.getText().toString();
-        FileUtil.writeFile(getIntent().getStringExtra("content"), beforeContent);
+
+        if (fromAndroidManifest) {
+            String filePath = FileUtil.getExternalStorageDir() + "/.sketchware/data/" + scId + "/Injection/androidmanifest/activities_components.json";
+            if (FileUtil.isExistFile(filePath)) {
+                ArrayList<HashMap<String, Object>> activitiesComponents = getGson()
+                        .fromJson(FileUtil.readFile(filePath), Helper.TYPE_MAP_LIST);
+                for (int i = 0; i < activitiesComponents.size(); i++) {
+                    if (activitiesComponents.get(i).get("name").equals(activityName)) {
+                        activitiesComponents.get(i).put("value", beforeContent);
+                        FileUtil.writeFile(filePath, getGson().toJson(activitiesComponents));
+                        SketchwareUtil.toast("Saved");
+                        return;
+                    }
+                }
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("name", activityName);
+                map.put("value", beforeContent);
+                activitiesComponents.add(map);
+                FileUtil.writeFile(filePath, getGson().toJson(activitiesComponents));
+            } else {
+                ArrayList<HashMap<String, Object>> arrayList = new ArrayList<>();
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("name", activityName);
+                map.put("value", beforeContent);
+                arrayList.add(map);
+                FileUtil.writeFile(filePath, getGson().toJson(arrayList));
+            }
+        } else FileUtil.writeFile(getIntent().getStringExtra("content"), beforeContent);
+
         SketchwareUtil.toast("Saved");
     }
 

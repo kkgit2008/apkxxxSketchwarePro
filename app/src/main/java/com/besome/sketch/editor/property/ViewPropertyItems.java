@@ -28,12 +28,10 @@ import a.a.a.Cx;
 import a.a.a.Gx;
 import a.a.a.Kw;
 import a.a.a.Lw;
-import a.a.a.Vw;
 import a.a.a.cC;
 import a.a.a.jC;
 import a.a.a.mB;
 import a.a.a.oq;
-import a.a.a.xB;
 import mod.hey.studios.project.ProjectSettings;
 import mod.pranav.viewbinding.ViewBindingBuilder;
 import pro.sketchware.R;
@@ -62,13 +60,13 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
         label.setGravity(Gravity.CENTER);
         label.setPadding(8, 8, 8, 8);
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        label.setText(xB.b().a(getContext(), R.string.design_property_recent_message_nodata));
+        label.setText(R.string.design_property_recent_message_nodata);
         addView(label);
     }
 
     private void a(ViewBean bean) {
         if (getOrientation() == LinearLayout.VERTICAL) {
-            a(xB.b().a(getResources(), R.string.property_header_layout));
+            a(getContext().getString(R.string.property_header_layout));
         }
 
         a(bean, "property_margin");
@@ -359,7 +357,7 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
 
     private void c(ViewBean bean) {
         if (getOrientation() == LinearLayout.VERTICAL) {
-            a(xB.b().a(getResources(), R.string.property_header_image), this);
+            a(getContext().getString(R.string.property_header_image), this);
         }
 
         a(bean, "property_image");
@@ -407,7 +405,7 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
 
     public void d(ViewBean bean) {
         if (getOrientation() == LinearLayout.VERTICAL) {
-            a(xB.b().a(getResources(), R.string.property_header_layout));
+            a(getContext().getString(R.string.property_header_layout));
         }
 
         Gx classInfo = bean.getClassInfo();
@@ -587,7 +585,7 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
             }
 
             if (classInfo.b("WaveSideBar")) {
-                a(bean, "property_text_size");
+                b("property_text_size", String.valueOf(bean.text.textSize));
                 a(bean, "property_text_color");
             }
 
@@ -621,11 +619,11 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
         Gx classInfo = bean.getClassInfo();
         if (classInfo.a("TextView")) {
             if (getOrientation() == LinearLayout.VERTICAL) {
-                a(xB.b().a(getResources(), R.string.property_header_text));
+                a(getContext().getString(R.string.property_header_text));
             }
 
             a(bean, "property_text");
-            a(bean, "property_text_size");
+            b("property_text_size", String.valueOf(bean.text.textSize));
             a(bean, "property_text_style");
             a(bean, "property_text_color");
             if (classInfo.b("EditText")) {
@@ -654,11 +652,11 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
         Gx classInfo = bean.getClassInfo();
         if (getOrientation() == LinearLayout.VERTICAL) {
             if (classInfo.a("ImageView")) {
-                a(xB.b().a(getResources(), R.string.property_header_image), this);
+                a(getContext().getString(R.string.property_header_image), this);
                 a(bean, "property_image");
                 a(bean, "property_scale_type");
             } else {
-                a(xB.b().a(getResources(), R.string.property_header_image));
+                a(getContext().getString(R.string.property_header_image));
             }
         } else if (classInfo.a("ImageView")) {
             a(bean, "property_image");
@@ -705,6 +703,7 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
                     case "property_inject" -> bean.inject = inputItem.getValue();
                     case "property_text" -> bean.text.text = inputItem.getValue();
                     case "property_hint" -> bean.text.hint = inputItem.getValue();
+                    case "property_text_size" -> bean.text.textSize = Integer.parseInt(inputItem.getValue());
                     case "property_weight" ->
                             bean.layout.weight = Integer.parseInt(inputItem.getValue());
                     case "property_weight_sum" ->
@@ -735,7 +734,6 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
                     case "property_orientation" ->
                             bean.layout.orientation = selectorItem.getValue();
                     case "property_text_style" -> bean.text.textType = selectorItem.getValue();
-                    case "property_text_size" -> bean.text.textSize = selectorItem.getValue();
                     case "property_input_type" -> bean.text.inputType = selectorItem.getValue();
                     case "property_ime_option" -> bean.text.imeOption = selectorItem.getValue();
                     case "property_spinner_mode" -> bean.spinnerMode = selectorItem.getValue();
@@ -813,10 +811,6 @@ public class ViewPropertyItems extends LinearLayout implements Kw, View.OnClickL
             } else if (view instanceof PropertySizeItem sizeItem) {
                 if (sizeItem.getKey().equals("property_divider_height")) {
                     bean.dividerHeight = sizeItem.getValue();
-                }
-            } else if (view instanceof Vw vw) {
-                if (vw.getKey().equals("property_text_font")) {
-                    bean.text.textFont = vw.getValue();
                 }
             } else if (view instanceof PropertyAttributesItem item) {
                 if (item.getKey().equals("property_parent_attr")) {

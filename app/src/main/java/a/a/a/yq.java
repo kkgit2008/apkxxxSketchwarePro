@@ -6,7 +6,6 @@ import static mod.hey.studios.util.ProjectFile.getDefaultColor;
 
 import android.content.Context;
 import android.util.Log;
-import android.util.Pair;
 
 import com.besome.sketch.beans.BlockBean;
 import com.besome.sketch.beans.ComponentBean;
@@ -30,6 +29,7 @@ import mod.hey.studios.util.ProjectFile;
 import mod.hilal.saif.blocks.CommandBlock;
 import mod.pranav.viewbinding.ViewBindingBuilder;
 import pro.sketchware.SketchApplication;
+import pro.sketchware.util.library.BuiltInLibraryManager;
 import pro.sketchware.utility.FileUtil;
 import pro.sketchware.xml.XmlBuilder;
 import pro.sketchware.xml.XmlBuilderHelper;
@@ -181,27 +181,14 @@ public class yq {
      * Example content: /storage/emulated/0/.sketchware/mysc/605/app/src/main/res/raw
      */
     public final String importedSoundsPath;
-
+    public final HashMap<String, Object> metadata;
     private final Material3LibraryManager material3LibraryManager;
-
     private final oB fileUtil;
     private final Context context;
-
-    private ExportType exportingType;
-
-    public final HashMap<String, Object> metadata;
-
     public jq N;
     public boolean generateDataBindingClasses;
     public boolean isAndroidStudioExport;
-
-    public enum ExportType {
-        AAB,
-        SIGN_APP,
-        DEBUG_APP,
-        ANDROID_STUDIO,
-        SOURCE_CODE_VIEWING
-    }
+    private ExportType exportingType;
 
     public yq(Context context, String sc_id) {
         this(context, wq.d(sc_id), lC.b(sc_id));
@@ -304,7 +291,7 @@ public class yq {
     /**
      * Generates top-level build.gradle, build.gradle for module ':app' and settings.gradle files.
      */
-    public void h() {
+    public void generateGradleFiles() {
         fileUtil.b(projectMyscPath + File.separator + "app" + File.separator + "build.gradle",
                 Lx.getBuildGradleString(VAR_DEFAULT_TARGET_SDK_VERSION, VAR_DEFAULT_MIN_SDK_VERSION, projectSettings.getValue(ProjectSettings.SETTING_TARGET_SDK_VERSION, String.valueOf(VAR_DEFAULT_TARGET_SDK_VERSION)), N, projectSettings.getValue(ProjectSettings.SETTING_ENABLE_VIEWBINDING, ProjectSettings.SETTING_GENERIC_VALUE_FALSE).equals(ProjectSettings.SETTING_GENERIC_VALUE_TRUE)));
         fileUtil.b(projectMyscPath + File.separator + "settings.gradle", Lx.a());
@@ -352,10 +339,10 @@ public class yq {
     }
 
     /**
-     * creates ic_launcher.xml to the project's app icon path, {@link yq#resDirectoryPath}/mipmap-anydpi-v26
+     * Creates ic_launcher.xml to the project's app icon path, {@link yq#resDirectoryPath}/mipmap-anydpi-v26
      */
 
-    public void cf(String content) {
+    public void createLauncherIconXml(String content) {
         try {
             fileUtil.b(resDirectoryPath + File.separator + "mipmap-anydpi-v26" + File.separator + "ic_launcher.xml", content);
         } catch (Exception e2) {
@@ -366,7 +353,7 @@ public class yq {
     /**
      * Generates DebugActivity.java, SketchApplication.java, and SketchLogger.java, if necessary.
      */
-    public void a(Context context) {
+    public void generateDebugFiles(Context context) {
         boolean logcatEnabled = N.isDebugBuild && new BuildSettings(sc_id).getValue(
                         BuildSettings.SETTING_ENABLE_LOGCAT, BuildSettings.SETTING_GENERIC_VALUE_TRUE)
                 .equals(BuildSettings.SETTING_GENERIC_VALUE_TRUE);
@@ -540,6 +527,7 @@ public class yq {
                     case "PatternLockView" -> N.x.isPatternLockViewUsed = true;
                     case "WaveSideBar" -> N.x.isWaveSideBarUsed = true;
                     case "YouTubePlayerView" -> N.x.isYoutubePlayerUsed = true;
+                    case "SwipeRefreshLayout" -> N.x.isSwipeRefreshLayoutUsed = true;
                 }
             }
         }
@@ -592,16 +580,10 @@ public class yq {
                     }
                     case ComponentBean.COMPONENT_TYPE_LOCATION_MANAGER ->
                             N.addPermission(activity.getActivityName(), jq.PERMISSION_ACCESS_FINE_LOCATION);
-                    case ComponentBean.COMPONENT_TYPE_FIREBASE_DYNAMIC_LINKS ->
-                            N.isDynamicLinkUsed = true;
                     case ComponentBean.COMPONENT_TYPE_FIREBASE_CLOUD_MESSAGE ->
                             N.x.isFCMUsed = true;
                     case ComponentBean.COMPONENT_TYPE_FIREBASE_AUTH_GOOGLE_LOGIN ->
                             N.x.isFBGoogleUsed = true;
-                    case ComponentBean.COMPONENT_TYPE_ONESIGNAL -> N.x.isOneSignalUsed = true;
-                    case ComponentBean.COMPONENT_TYPE_FACEBOOK_ADS_BANNER,
-                         ComponentBean.COMPONENT_TYPE_FACEBOOK_ADS_INTERSTITIAL ->
-                            N.x.isFBAdsUsed = true;
                     default -> {
                     }
                 }
@@ -618,19 +600,13 @@ public class yq {
                     case "PatternLockView" -> N.x.isPatternLockViewUsed = true;
                     case "WaveSideBar" -> N.x.isWaveSideBarUsed = true;
                     case "YouTubePlayerView" -> N.x.isYoutubePlayerUsed = true;
+                    case "SwipeRefreshLayout" -> N.x.isSwipeRefreshLayoutUsed = true;
                 }
             }
 
             for (Map.Entry<String, ArrayList<BlockBean>> entry : projectDataManager.b(activity.getJavaName()).entrySet()) {
                 for (BlockBean block : entry.getValue()) {
                     switch (block.opCode) {
-                        case "FirebaseDynamicLink setDataHost":
-                        case "setDynamicLinkDataHost":
-                            if (block.parameters.size() >= 2) {
-                                N.dlDataList.add(new Pair<>(block.parameters.get(0), block.parameters.get(1)));
-                            }
-                            break;
-
                         case "intentSetAction":
                             // If an Intent setAction (ACTION_CALL) block is used
                             if (block.parameters.get(1).equals(uq.c[1])) {
@@ -693,17 +669,6 @@ public class yq {
                             N.addPermission(jq.PERMISSION_ACCESS_NETWORK_STATE);
                             break;
 
-                        case "OneSignal setAppId":
-                        case "OnResultBillingResponse":
-                        case "Youtube useWebUI":
-                        case "FacebookAds setProvider":
-                            if (!block.parameters.isEmpty()) {
-                                if (N.x.param == null) N.x.param = new HashMap<>();
-                                N.x.param.clear();
-                                N.x.param.put(block.opCode, block.parameters);
-                            }
-                            break;
-
                         default:
                     }
                 }
@@ -764,14 +729,14 @@ public class yq {
             fileUtil.b(resDirectoryPath + File.separator + filePath,
                     CommandBlock.applyCommands(filePath, mx.toCode()));
         }
-        h();
+        generateGradleFiles();
     }
 
     /**
      * Get source code files that are viewable in SrcCodeViewer
      */
     public ArrayList<SrcCodeBean> a(hC projectFileManager, eC projectDataManager, BuiltInLibraryManager builtInLibraryManager) {
-        a(SketchApplication.getContext());
+        generateDebugFiles(SketchApplication.getContext());
         CommandBlock.x();
 
         String javaDir = FileUtil.getExternalStorageDir() + "/.sketchware/data/" + sc_id + "/files/java/";
@@ -1062,5 +1027,13 @@ public class yq {
             stylesFileBuilder.addStyle("AppTheme.DebugActivity", "AppTheme");
             return CommandBlock.applyCommands("styles.xml", stylesFileBuilder.toCode());
         }
+    }
+
+    public enum ExportType {
+        AAB,
+        SIGN_APP,
+        DEBUG_APP,
+        ANDROID_STUDIO,
+        SOURCE_CODE_VIEWING
     }
 }

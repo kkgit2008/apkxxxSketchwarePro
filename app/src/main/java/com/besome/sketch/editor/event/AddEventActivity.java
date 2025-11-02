@@ -7,15 +7,14 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
@@ -41,33 +40,28 @@ import a.a.a.mB;
 import a.a.a.oq;
 import a.a.a.rs;
 import a.a.a.wB;
-import a.a.a.xB;
+import dev.chrisbanes.insetter.Insetter;
 import pro.sketchware.R;
+import pro.sketchware.databinding.LogicPopupAddEventBinding;
 
 public class AddEventActivity extends BaseAppCompatActivity implements View.OnClickListener {
     private ArrayList<EventBean> addableDrawerViewEvents;
     private ArrayList<EventBean> eventsToAdd;
     private boolean C;
-    private Button add_button;
-    private Button cancel_button;
     private int categoryIndex;
-    private TextView empty_message;
     private MoreBlockBuilderView moreBlockView;
     private String sc_id;
     private ProjectFileBean projectFile;
     private CategoryAdapter categoryAdapter;
     private EventAdapter eventAdapter;
     private EventsToAddAdapter eventsToAddAdapter;
-    private TextView tv_category;
-    private RecyclerView event_list;
-    private RecyclerView events_preview;
-    private LinearLayout container;
-    private ScrollView moreblock_layout;
     private HashMap<Integer, ArrayList<EventBean>> categories;
     private ArrayList<EventBean> addableEtcEvents;
     private ArrayList<EventBean> addableViewEvents;
     private ArrayList<EventBean> addableComponentEvents;
     private ArrayList<EventBean> addableActivityEvents;
+
+    private LogicPopupAddEventBinding binding;
 
     @Override
     public void finish() {
@@ -78,14 +72,14 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
     private void l() {
         if (eventsToAdd.isEmpty() && !C) {
             C = true;
-            gB.a(events_preview, 300, new Animator.AnimatorListener() {
+            gB.a(binding.eventsPreview, 300, new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(@NonNull Animator animation) {
                 }
 
                 @Override
                 public void onAnimationEnd(@NonNull Animator animation) {
-                    events_preview.setVisibility(View.GONE);
+                    binding.eventsPreview.setVisibility(View.GONE);
                 }
 
                 @Override
@@ -98,8 +92,8 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
             });
         } else if (!eventsToAdd.isEmpty() && C) {
             C = false;
-            events_preview.setVisibility(View.VISIBLE);
-            gB.b(events_preview, 300, null);
+            binding.eventsPreview.setVisibility(View.VISIBLE);
+            gB.b(binding.eventsPreview, 300, null);
         }
     }
 
@@ -213,17 +207,17 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
         if (categoryAdapter.lastSelectedCategory == -1) {
             eventAdapter.setEvents(categories.get(categoryIndex));
             categoryAdapter.lastSelectedCategory = categoryIndex;
-            tv_category.setText(rs.a(getApplicationContext(), categoryIndex));
+            binding.tvCategory.setText(rs.a(getApplicationContext(), categoryIndex));
             if (categoryAdapter != null) {
                 categoryAdapter.notifyItemChanged(categoryIndex);
             }
             if (categoryIndex == 4) {
-                moreblock_layout.setVisibility(View.VISIBLE);
-                empty_message.setVisibility(View.GONE);
-                event_list.setVisibility(View.GONE);
+                binding.moreblockLayout.setVisibility(View.VISIBLE);
+                binding.emptyMessage.setVisibility(View.GONE);
+                binding.eventList.setVisibility(View.GONE);
             } else {
-                moreblock_layout.setVisibility(View.GONE);
-                event_list.setVisibility(View.VISIBLE);
+                binding.moreblockLayout.setVisibility(View.GONE);
+                binding.eventList.setVisibility(View.VISIBLE);
             }
         }
         if (eventAdapter != null) {
@@ -242,9 +236,9 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
                         if (!moreBlockView.b()) {
                             eventAdapter.setEvents(categories.get(4));
                             categoryAdapter.lastSelectedCategory = 4;
-                            tv_category.setText(rs.a(getApplicationContext(), 4));
-                            empty_message.setVisibility(View.GONE);
-                            moreblock_layout.setVisibility(View.VISIBLE);
+                            binding.tvCategory.setText(rs.a(getApplicationContext(), 4));
+                            binding.emptyMessage.setVisibility(View.GONE);
+                            binding.moreblockLayout.setVisibility(View.VISIBLE);
                             categoryAdapter.notifyDataSetChanged();
                             finished = true;
                         } else {
@@ -257,9 +251,9 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
                             jC.a(sc_id).a(projectFile.getJavaName(), eventBean);
                         }
                         if (eventsToAdd.size() == 1) {
-                            bB.a(getApplicationContext(), xB.b().a(getApplicationContext(), R.string.event_message_new_event), bB.TOAST_NORMAL).show();
+                            bB.a(getApplicationContext(), getApplicationContext().getString(R.string.event_message_new_event), bB.TOAST_NORMAL).show();
                         } else if (eventsToAdd.size() > 1) {
-                            bB.a(getApplicationContext(), xB.b().a(getApplicationContext(), R.string.event_message_new_events), bB.TOAST_NORMAL).show();
+                            bB.a(getApplicationContext(), getApplicationContext().getString(R.string.event_message_new_events), bB.TOAST_NORMAL).show();
                         }
                         jC.a(sc_id).k();
                         setResult(RESULT_OK);
@@ -277,7 +271,13 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
     public void onCreate(Bundle savedInstanceState) {
         enableEdgeToEdgeNoContrast();
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.logic_popup_add_event);
+        binding = LogicPopupAddEventBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        Insetter.builder()
+                .marginBottom(WindowInsetsCompat.Type.ime(), false)
+                .applyToView(binding.contentRoot);
+
         Intent intent = getIntent();
         if (savedInstanceState == null) {
             sc_id = intent.getStringExtra("sc_id");
@@ -288,20 +288,11 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
             projectFile = savedInstanceState.getParcelable("project_file");
             categoryIndex = savedInstanceState.getInt("category_index");
         }
-        event_list = findViewById(R.id.event_list);
-        tv_category = findViewById(R.id.tv_category);
-        RecyclerView category_list = findViewById(R.id.category_list);
-        events_preview = findViewById(R.id.events_preview);
-        container = findViewById(R.id.container);
-        add_button = findViewById(R.id.add_button);
-        cancel_button = findViewById(R.id.cancel_button);
-        empty_message = findViewById(R.id.empty_message);
-        moreblock_layout = findViewById(R.id.moreblock_layout);
         moreBlockView = new MoreBlockBuilderView(this);
-        moreblock_layout.addView(moreBlockView);
-        moreblock_layout.setVisibility(View.GONE);
-        add_button.setOnClickListener(this);
-        cancel_button.setOnClickListener(this);
+        binding.moreblockLayout.addView(moreBlockView);
+        binding.moreblockLayout.setVisibility(View.GONE);
+        binding.addButton.setOnClickListener(this);
+        binding.cancelButton.setOnClickListener(this);
         categories = new HashMap<>();
         addableEtcEvents = new ArrayList<>();
         addableViewEvents = new ArrayList<>();
@@ -313,37 +304,34 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
         categories.put(2, addableComponentEvents);
         categories.put(3, addableDrawerViewEvents);
         categories.put(4, addableEtcEvents);
-        event_list.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false));
+        binding.eventList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.VERTICAL, false));
         eventAdapter = new EventAdapter();
-        event_list.setAdapter(eventAdapter);
+        binding.eventList.setAdapter(eventAdapter);
         categoryAdapter = new CategoryAdapter();
-        category_list.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.HORIZONTAL, false));
-        category_list.setAdapter(categoryAdapter);
-        ((SimpleItemAnimator) category_list.getItemAnimator()).setSupportsChangeAnimations(false);
+        binding.categoryList.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.HORIZONTAL, false));
+        binding.categoryList.setAdapter(categoryAdapter);
+        ((SimpleItemAnimator) binding.categoryList.getItemAnimator()).setSupportsChangeAnimations(false);
         eventsToAddAdapter = new EventsToAddAdapter();
-        events_preview.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.HORIZONTAL, false));
-        events_preview.setAdapter(eventsToAddAdapter);
+        binding.eventsPreview.setLayoutManager(new LinearLayoutManager(getApplicationContext(), RecyclerView.HORIZONTAL, false));
+        binding.eventsPreview.setAdapter(eventsToAddAdapter);
         C = true;
-        events_preview.setVisibility(View.GONE);
-        empty_message.setVisibility(View.GONE);
+        binding.eventsPreview.setVisibility(View.GONE);
+        binding.emptyMessage.setVisibility(View.GONE);
         eventsToAdd = new ArrayList<>();
-        event_list.bringToFront();
+        binding.eventList.bringToFront();
         overridePendingTransition(R.anim.ani_fade_in, R.anim.ani_fade_out);
     }
 
     @Override
     public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        add_button.setText(xB.b().a(this, R.string.common_word_add));
-        cancel_button.setText(xB.b().a(this, R.string.common_word_cancel));
-        empty_message.setText(xB.b().a(this, R.string.event_message_no_avail_events));
         moreBlockView.setFuncNameValidator(jC.a(sc_id).a(projectFile));
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        gB.a(container, 500);
+        gB.a(binding.container, 500);
         if (projectFile != null) {
             initialize();
         }
@@ -358,8 +346,8 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
     }
 
     private class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
+        private final ArrayList<EventBean> events = new ArrayList<>();
         private int lastSelectedEvent = -1;
-        private ArrayList<EventBean> events = new ArrayList<>();
         private boolean e;
 
         public EventAdapter() {
@@ -418,12 +406,13 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
 
         private void setEvents(ArrayList<EventBean> events) {
             if (events.isEmpty()) {
-                empty_message.setVisibility(View.VISIBLE);
+                binding.emptyMessage.setVisibility(View.VISIBLE);
             } else {
-                empty_message.setVisibility(View.GONE);
-                event_list.setVisibility(View.VISIBLE);
+                binding.emptyMessage.setVisibility(View.GONE);
+                binding.eventList.setVisibility(View.VISIBLE);
             }
-            this.events = events;
+            this.events.clear();
+            this.events.addAll(events);
         }
 
         private class ViewHolder extends RecyclerView.ViewHolder {
@@ -539,12 +528,12 @@ public class AddEventActivity extends BaseAppCompatActivity implements View.OnCl
                     if (layoutPosition != lastSelectedCategory) {
                         lastSelectedCategory = getLayoutPosition();
                         notifyDataSetChanged();
-                        tv_category.setText(rs.a(getApplicationContext(), lastSelectedCategory));
+                        binding.tvCategory.setText(rs.a(getApplicationContext(), lastSelectedCategory));
                         if (lastSelectedCategory == 4) {
-                            moreblock_layout.setVisibility(View.VISIBLE);
-                            empty_message.setVisibility(View.GONE);
+                            binding.moreblockLayout.setVisibility(View.VISIBLE);
+                            binding.emptyMessage.setVisibility(View.GONE);
                         } else {
-                            moreblock_layout.setVisibility(View.GONE);
+                            binding.moreblockLayout.setVisibility(View.GONE);
                             eventAdapter.setEvents(categories.get(lastSelectedCategory));
                             eventAdapter.notifyDataSetChanged();
                         }
