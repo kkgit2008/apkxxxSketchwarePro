@@ -1,3 +1,14 @@
+# changes: 
+* 1.禁用首次运行的强制弹窗，优化体验
+* 2.当联网权限被删除时，点击Store不再崩溃
+* 3.新增双击返回键可彻底关闭软件，并在最近任务列表删除
+* 4.修复Firebase引起的无法运行问题(MainActivity.java)
+
+<p> </p>
+<p> </p>
+
+
+
 <p align="center">
   <img src="assets/Sketchware-Pro.png" style="width: 30%;" />
 </p>

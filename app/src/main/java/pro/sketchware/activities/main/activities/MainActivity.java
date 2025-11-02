@@ -56,6 +56,12 @@ import pro.sketchware.utility.FileUtil;
 import pro.sketchware.utility.SketchwareUtil;
 import pro.sketchware.utility.UI;
 
+// when back pressed twice, exit the app completely
+import androidx.core.view.GravityCompat;
+
+// about internet_permission=false 
+import android.content.pm.PackageManager;
+
 public class MainActivity extends BasePermissionAppCompatActivity {
     private static final String PROJECTS_FRAGMENT_TAG = "projects_fragment";
     private static final String PROJECTS_STORE_FRAGMENT_TAG = "projects_store_fragment";
@@ -63,6 +69,29 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     private DB u;
     private Snackbar storageAccessDenied;
     private MainBinding binding;
+
+    // when back pressed twice, exit the app completely
+    private long backPressedTime = 0;
+        @Override
+        public void onBackPressed() {
+                if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                        binding.drawerLayout.closeDrawer(GravityCompat.START);
+                } else {
+                        if (backPressedTime + 2000 > System.currentTimeMillis()) {
+                                super.onBackPressed();
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                                            finishAndRemoveTask();
+                                    } else {
+                                            finishAffinity();
+                                    }
+                                System.exit(0);
+                        } else {
+                                Toast.makeText(this, "Try again to exit !", Toast.LENGTH_SHORT).show();
+                        }
+                        backPressedTime = System.currentTimeMillis();
+                }
+        }
+
     private final OnBackPressedCallback closeDrawer = new OnBackPressedCallback(true) {
         @Override
         public void handleOnBackPressed() {
@@ -274,8 +303,15 @@ public class MainActivity extends BasePermissionAppCompatActivity {
                 navigateToProjectsFragment();
                 return true;
             } else if (id == R.id.item_sketchub) {
-                navigateToSketchubFragment();
-                return true;
+                if (checkInternetPermission()) {
+                    // if internet_permission=true,then select and navigate 
+                    navigateToSketchubFragment();
+                    return true;
+                } else {
+                    // if internet_permission=false,then toast 
+                    Toast.makeText(this, "Internet permission is required", Toast.LENGTH_SHORT).show();
+                    return false;
+                }
             }
             return false;
         });
@@ -295,6 +331,10 @@ public class MainActivity extends BasePermissionAppCompatActivity {
         }
 
         navigateToProjectsFragment();
+    }
+
+    private boolean checkInternetPermission() {
+        return ActivityCompat.checkSelfPermission(this, Manifest.permission.INTERNET) == PackageManager.PERMISSION_GRANTED;
     }
 
     private Fragment getFragmentForNavId(int navItemId) {
@@ -372,7 +412,13 @@ public class MainActivity extends BasePermissionAppCompatActivity {
             launcher.putExtra("select", "changelog");
             startActivity(launcher);
         });
-        bottomSheetDialog.setCancelable(false);
+        bottomSheetDialog.setCancelable(true);
+
+        bottomSheetDialog.setOnCancelListener(dialog -> {
+            ConfigActivity.setSetting(ConfigActivity.SETTING_CRITICAL_UPDATE_REMINDER, true);
+            Toast.makeText(this, "See more at ' ≡ Changelog '", Toast.LENGTH_LONG).show();
+        });
+
         return bottomSheetDialog;
     }
 
@@ -389,9 +435,12 @@ public class MainActivity extends BasePermissionAppCompatActivity {
     public void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         drawerToggle.syncState();
+
         if (isFirebaseInitialized(this)) {
             FirebaseMessaging.getInstance().subscribeToTopic("all");
+            //FirebaseMessaging.getInstance().subscribeToTopic("all");
         }
+
     }
 
     @Override
