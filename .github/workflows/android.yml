@@ -63,13 +63,14 @@ jobs:
         run: |
           printf 'GOOGLE_SERVICES_JSON<<EOF\n%s\nEOF\n' "$JSON_CONTENT" >> $GITHUB_ENV
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
+      ###- name: Setup Gradle
+        ###uses: ###gradle/actions/setup-gradle@v3
 
       - name: Build Release APK
         env:
           SKETCHUB_API_KEY: ${{ secrets.SKETCHUB_API_KEY }}
-        run: gradle assembleRelease
+        run: ./gradlew assembleRelease
+        ###run: gradle assembleRelease
 
       - name: Set short SHA
         id: set_sha
