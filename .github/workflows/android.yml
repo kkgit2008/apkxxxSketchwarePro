@@ -71,7 +71,7 @@ jobs:
         env:
           SKETCHUB_API_KEY: ${{ secrets.SKETCHUB_API_KEY }}
         #run: gradle assembleRelease
-        run: gradle assembleRelease -x lintVitalAnalyzeRelease -x lintVitalRelease
+        run: ./gradlew assembleRelease -x lintVitalAnalyzeRelease -x lintVitalRelease
 
       - name: Set short SHA
         id: set_sha
